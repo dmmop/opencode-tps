@@ -1,5 +1,10 @@
 # opencode-tps
 
+[![npm version](https://img.shields.io/npm/v/%40dmmop%2Fopencode-tps)](https://www.npmjs.com/package/@dmmop/opencode-tps)
+[![npm downloads](https://img.shields.io/npm/dm/%40dmmop%2Fopencode-tps)](https://www.npmjs.com/package/@dmmop/opencode-tps)
+[![Release](https://github.com/dmmop/opencode-tps/actions/workflows/release.yml/badge.svg)](https://github.com/dmmop/opencode-tps/actions/workflows/release.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 OpenCode TUI plugin that displays response performance metrics while a session is running.
 
 ## Features
