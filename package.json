@@ -1,7 +1,32 @@
 {
-  "name": "oc-tps",
-  "private": true,
+  "name": "@dmmop/opencode-tps",
+  "version": "1.0.0",
+  "description": "OpenCode TUI plugin that displays response performance metrics.",
   "type": "module",
+  "exports": "./src/index.ts",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dmmop/opencode-tps.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dmmop/opencode-tps/issues"
+  },
+  "homepage": "https://github.com/dmmop/opencode-tps#readme",
+  "license": "MIT",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "tui",
+    "performance"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@opencode-ai/plugin": "0.0.0-next-16650",
     "@opentui/core": "0.4.5",

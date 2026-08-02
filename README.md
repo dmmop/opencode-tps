@@ -10,6 +10,21 @@ OpenCode TUI plugin that displays response performance metrics while a session i
 - Tracks text, reasoning, and tool-input streaming events.
 - Uses the OpenCode TUI session composer slot without changing conversation output.
 
+## Installation
+
+Add the published package to the `plugins` array in your OpenCode configuration:
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": ["@dmmop/opencode-tps"]
+}
+```
+
+OpenCode installs the package and its production dependencies automatically. To
+pin a release, use a versioned package specifier such as
+`@dmmop/opencode-tps@1.0.0`.
+
 ## Development
 
 Requirements:
@@ -24,6 +39,14 @@ bun install
 ```
 
 The plugin entrypoint is `src/index.ts`. Load that entrypoint using your OpenCode plugin configuration while developing locally.
+
+## Releasing
+
+A maintainer can trigger a release from GitHub Actions:
+
+1. Go to **Actions** > **Release** > **Run workflow**.
+2. Choose `patch`, `minor`, or `major`.
+3. The workflow installs the locked dependencies, checks the npm package, bumps the version, creates and pushes a Git tag, creates a GitHub Release, and publishes `@dmmop/opencode-tps` to npm with provenance.
 
 ## Metric notes
 
