@@ -1,6 +1,6 @@
 {
   "name": "@dmmop/opencode-tps",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "OpenCode TUI plugin that displays response performance metrics.",
   "type": "module",
   "exports": "./src/index.ts",
