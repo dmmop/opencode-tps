@@ -261,14 +261,17 @@ const plugin = {
       bump()
     })
 
-    const unregisterSlot = context.ui.slot("session.composer.top", (value) => (
-      <SessionPromptRight
-        context={context}
-        sessionID={value.sessionID}
-        tracker={tracker}
-        version={version}
-      />
-    ))
+    const unregisterSlot = context.ui.slot({
+      append: "session.composer.top",
+      render: ({ sessionID }) => (
+        <SessionPromptRight
+          context={context}
+          sessionID={sessionID}
+          tracker={tracker}
+          version={version}
+        />
+      ),
+    })
 
     const timer = setInterval(() => {
       pruneSamples()
