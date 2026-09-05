@@ -1,5 +1,5 @@
 /** @jsxImportSource @opentui/solid */
-import type { Context, Definition } from "@opencode-ai/plugin/tui/plugin"
+import { Plugin } from "@opencode-ai/plugin/tui"
 import { createSignal } from "solid-js"
 
 type StreamSample = {
@@ -80,7 +80,7 @@ function calculateTps(samples: StreamSample[], now: number) {
 }
 
 function SessionPromptRight(props: {
-  context: Context
+  context: Plugin.Context
   sessionID: string
   tracker: TrackerState
   version: () => number
@@ -126,7 +126,7 @@ function addAverage(tracker: TrackerState, sessionID: string, tokens: number, du
   }
 }
 
-const plugin = {
+export default Plugin.define({
   id: "oc-tps",
   setup(context) {
     const tracker: TrackerState = {
@@ -293,6 +293,4 @@ const plugin = {
       clearInterval(timer)
     }
   },
-} satisfies Definition
-
-export default plugin
+})
