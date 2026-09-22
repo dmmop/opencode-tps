@@ -3,6 +3,9 @@
   "version": "1.0.1",
   "description": "OpenCode TUI plugin that displays response performance metrics.",
   "type": "module",
+  "scripts": {
+    "prepare": "husky"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./tui": "./tui.ts"
@@ -32,7 +35,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@opencode-ai/plugin": "0.0.0-beta-19151"
+    "@opencode/plugin": "2.0.2"
   },
   "peerDependencies": {
     "@opentui/core": "0.5.10",
@@ -40,8 +43,11 @@
     "solid-js": "1.9.15"
   },
   "devDependencies": {
+    "@commitlint/cli": "20.5.3",
+    "@commitlint/config-conventional": "20.5.3",
     "@opentui/core": "0.5.10",
     "@opentui/solid": "0.5.10",
+    "husky": "9.1.7",
     "solid-js": "1.9.15"
   }
 }

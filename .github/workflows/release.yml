@@ -1,61 +1,89 @@
-name: Release
+name: CI and Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: Version bump type
-        required: true
-        default: patch
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
 
 permissions:
-  contents: write
-  id-token: write
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  release:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - run: bun install --frozen-lockfile
+      - name: Validate commit messages and squash title
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if [[ "$BASE_SHA" =~ ^0+$ ]]; then
+            npx --no -- commitlint --last --strict
+          else
+            npx --no -- commitlint --from "$BASE_SHA" --to "$HEAD_SHA" --strict
+          fi
+          if [[ "$GITHUB_EVENT_NAME" == pull_request ]]; then
+            printf '%s\n' "$PR_TITLE" | npx --no -- commitlint --strict
+          fi
+      - run: bun test
+      - name: Typecheck source
+        run: >-
+          bunx --package typescript@5.9.3 tsc --noEmit --skipLibCheck
+          --target esnext --module preserve --moduleResolution bundler
+          --jsx react-jsx --jsxImportSource @opentui/solid
+          --allowImportingTsExtensions tui.ts src/index.ts
+      - name: Build TUI
+        run: bun build tui.ts --target bun --packages external --outdir "$RUNNER_TEMP/tps-build"
+      - name: Smoke-test the packed TUI export
+        run: |
+          tarball=$(npm pack --pack-destination "$RUNNER_TEMP" --json | node -pe 'JSON.parse(require("fs").readFileSync(0,"utf8"))[0].filename')
+          consumer=$(mktemp -d)
+          cd "$consumer"
+          printf '{"private":true,"type":"module"}\n' > package.json
+          bun add "$RUNNER_TEMP/$tarball"
+          bun -e 'const {default: p} = await import("@dmmop/opencode-tps/tui"); if (p.id !== "oc-tps" || typeof p.setup !== "function") throw new Error("Invalid TUI export")'
+
+  release:
+    needs: check
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
           registry-url: https://registry.npmjs.org
       - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
       - run: bun install --frozen-lockfile
-      - run: npm pack --dry-run
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      - name: Bump version
-        run: npm version ${{ github.event.inputs.version }}
-      - name: Push tag and commit
-        run: git push --follow-tags
-      - name: Create GitHub release
+      - name: Release from Conventional Commits
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
         run: |
-          version=$(node -p "require('./package.json').version")
-          prev_tag=$(git tag --sort=-version:refname | grep '^v' | sed -n '2p')
-          if [ -n "$prev_tag" ]; then
-            echo "## What's Changed" > .release-notes.md
-            git log --oneline --no-decorate "${prev_tag}..HEAD" -- . >> .release-notes.md
-            gh release create "v${version}" --title "v${version}" -F .release-notes.md
-            rm .release-notes.md
-          else
-            gh release create "v${version}" --title "v${version}" --generate-notes
-          fi
-      - name: Upgrade npm & publish
-        run: |
-          npm install -g npm@latest
           unset NODE_AUTH_TOKEN
-          npm publish --provenance --access public
+          npm exec --yes --package=semantic-release@25.0.9 --package=conventional-changelog-conventionalcommits@10.4.0 -- semantic-release

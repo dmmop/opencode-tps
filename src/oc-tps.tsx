@@ -1,5 +1,5 @@
 /** @jsxImportSource @opentui/solid */
-import { Plugin } from "@opencode-ai/plugin/tui"
+import { Plugin } from "@opencode/plugin/tui"
 import { createSignal } from "solid-js"
 
 type StreamSample = {
@@ -51,6 +51,15 @@ function formatRate(value: number, label: "TPS" | "AVG") {
 function formatTtft(value: number) {
   if (!Number.isFinite(value) || value < 0) return undefined
   return `${value.toFixed(1)}s`
+}
+
+type ComposerTextTokens = Plugin.Context["theme"]["text"]
+
+export function composerForeground(text: ComposerTextTokens): ComposerTextTokens["subdued"] {
+  const tokens = text as ComposerTextTokens & {
+    muted?: ComposerTextTokens["subdued"]
+  }
+  return tokens.muted ?? tokens.subdued
 }
 
 function activeDurationMs(samples: StreamSample[], tailAt?: number) {
@@ -112,7 +121,7 @@ function SessionPromptRight(props: {
     return `TPS ${live} | AVG ${avg} | TTFT ${ttft}`
   }
 
-  return <text fg={props.context.theme.text.subdued}>{statusText()}</text>
+  return <text fg={composerForeground(props.context.theme.text)}>{statusText()}</text>
 }
 
 function addAverage(tracker: TrackerState, sessionID: string, tokens: number, durationMs: number) {
