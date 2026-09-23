@@ -86,4 +86,4 @@ jobs:
           NPM_CONFIG_PROVENANCE: 'true'
         run: |
           unset NODE_AUTH_TOKEN
-          npm exec --yes --package=semantic-release@25.0.9 --package=conventional-changelog-conventionalcommits@10.4.0 -- semantic-release
+          npm exec --yes --package=semantic-release@25.0.9 --package=conventional-changelog-conventionalcommits@9.3.1 -- semantic-release
